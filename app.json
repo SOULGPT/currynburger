@@ -1,17 +1,22 @@
 {
   "expo": {
-    "name": "fast_food",
-    "slug": "fast_food",
+    "name": "Curry & Burger",
+    "slug": "curryandburger",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "fastfood",
+    "scheme": "curryandburger",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.curryandburger.app",
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
+      "appStoreId": "6762578235"
     },
     "android": {
+      "package": "com.curryandburger.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -45,6 +50,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d3972004-3ab1-4f40-a016-126b73607d7b"
+      }
+    },
+    "owner": "eidenaks-organization"
   }
 }

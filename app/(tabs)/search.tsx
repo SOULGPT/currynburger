@@ -1,7 +1,7 @@
 import {FlatList, Text, View} from 'react-native'
 import {SafeAreaView} from "react-native-safe-area-context";
 import useAppwrite from "@/lib/useAppwrite";
-import {getCategories, getMenu} from "@/lib/appwrite";
+import {getCategories, getMenu} from "@/lib/supabase";
 import {useLocalSearchParams} from "expo-router";
 import {useEffect} from "react";
 import CartButton from "@/components/CartButton";
@@ -20,7 +20,7 @@ const Search = () => {
 
     useEffect(() => {
         refetch({ category, query, limit: 6})
-    }, [category, query]);
+    }, [category, query, refetch]);
 
     return (
         <SafeAreaView className="bg-white h-full">

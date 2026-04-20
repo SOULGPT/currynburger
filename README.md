@@ -47,7 +47,7 @@ If you're getting started and need assistance or face any bugs, join our active 
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
 
-- **[Appwrite](https://jsm.dev/rn25-appwrite)** is an open-source backend-as-a-service platform offering secure authentication (email/password, OAuth, SMS, magic links), databases, file storage with compression/encryption, real-time messaging, serverless functions, and static site hosting via Appwrite Sites—all managed through a unified console and microservices architecture.
+- **[Supabase](https://supabase.com/)** is an open-source Firebase alternative providing secure authentication (email/password, OAuth, SMS), PostgreSQL database, real-time subscriptions, file storage, edge functions, and auto-generated APIs—all managed through a unified console.
 
 - **[Expo](https://expo.dev/)** is an open-source platform for building universal native apps (Android, iOS, web) using JavaScript/TypeScript and React Native. It features file-based routing via Expo Router, fast refresh, native modules for camera/maps/notifications, over-the-air updates (EAS), and streamlined app deployment.
 
@@ -67,21 +67,29 @@ If you're getting started and need assistance or face any bugs, join our active 
 
 ## <a name="features">🔋 Features</a>
 
-### Features of the Mobile Movie AppProject
+### Features of Curry & Burger Restaurant Management System
 
-👉 **Google Authentication**: Secure and seamless user sign-ins using Google.  
+👉 **Multi-Role Authentication**: Customer, Waiter, Kitchen, Admin, and Desk staff access with role-based routing.
 
-👉 **Home Page**: Showcases the latest offers and directs users to filtered search results.  
+👉 **Premium Customer App**: Eye-catching UI with social authentication (Google & Apple), menu browsing, cart management, and order placement.
 
-👉 **Search Page**: Lets users explore all foods with category filters and keyword search.  
+👉 **Waiter Interface**: Table management, real-time order taking, and communication with kitchen.
 
-👉 **Product Details Page**: Displays food images, key details, and allows adding items to the cart.  
+👉 **Kitchen Display System**: Real-time order queue with urgency indicators, audio notifications, and one-tap order completion.
 
-👉 **Cart Page**: Review selected items and see the total price.  
+👉 **Admin Dashboard**: Full system management, menu editing, and analytics.
 
-👉 **Profile Page**: Manage user settings and preferences.  
+👉 **Front Desk**: Order processing, billing, and customer service tools.
 
-👉 **Appwrite Integration**: Handles backend database and file storage for food items.
+👉 **Customer Display TV**: Takeaway order notifications with marketing integration.
+
+👉 **Real-time Updates**: Live order status synchronization across all interfaces.
+
+👉 **Offline Support**: Graceful degradation when network connectivity is lost.
+
+👉 **Audio Notifications**: Kitchen alerts for new orders and urgent situations.
+
+👉 **Supabase Integration**: PostgreSQL database with real-time subscriptions and secure authentication.
 
 and many more, including code architecture and reusability.
 
@@ -114,14 +122,31 @@ npm install
 
 **Set Up Environment Variables**
 
-Create a new file named `.env` in the root of your project and add the following content:
-
-```env
-EXPO_PUBLIC_APPWRITE_PROJECT_ID=
-EXPO_PUBLIC_APPWRITE_ENDPOINT=
+1. Copy the example environment file:
+```bash
+cp .env.example .env
 ```
 
-Replace the placeholder values with your actual credentials by signing up on the **[Appwrite](https://jsm.dev/rn25-appwrite)** dashboard.
+2. Fill in your credentials. See [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md) for detailed instructions.
+
+**Minimum Required Variables:**
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_KEY=your-anon-key
+```
+
+**Get Supabase credentials:**
+- Sign up at **[Supabase](https://supabase.com)**
+- Create a new project
+- Go to Settings → API
+- Copy the Project URL and anon public key
+
+**Optional but Recommended:**
+```env
+EXPO_PUBLIC_SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
+EXPO_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+EXPO_PUBLIC_APPLE_CLIENT_ID=com.curryandburger.app
+```
 
 **Running the Project**
 

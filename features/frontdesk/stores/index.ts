@@ -1,0 +1,1 @@
+export { useFrontDeskStore } from './frontdesk.store';

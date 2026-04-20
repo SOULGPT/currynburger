@@ -1,107 +1,200 @@
-import { Models } from "react-native-appwrite";
+// ============================================
+// CURRY & BURGER: Comprehensive Type Definitions
+// ============================================
 
-export interface MenuItem extends Models.Document {
-    name: string;
-    price: number;
-    image_url: string;
-    description: string;
-    calories: number;
-    protein: number;
-    rating: number;
-    type: string;
+export interface BaseDocument {
+  $id: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface Category extends Models.Document {
-    name: string;
-    description: string;
+// ============ AUTH & PROFILES ============
+export type UserRole = 'customer' | 'waiter' | 'kitchen' | 'admin' | 'desk';
+
+export interface User extends BaseDocument {
+  name: string;
+  email: string;
+  avatar: string;
+  role: UserRole;
 }
 
-export interface User extends Models.Document {
-    name: string;
-    email: string;
-    avatar: string;
+// ============ MENU ITEMS ============
+export interface Category extends BaseDocument {
+  name: string;
+  description: string;
+  display_order?: number;
 }
 
+export interface Customization extends BaseDocument {
+  name: string;
+  price: number;
+  type: 'topping' | 'side' | 'size' | 'crust' | 'spice';
+}
+
+export interface MenuItem extends BaseDocument {
+  name: string;
+  price: number;
+  image_url: string;
+  description: string;
+  calories: number;
+  protein: number;
+  rating: number;
+  category_id?: string;
+  is_available?: boolean;
+  spice_level?: number;
+}
+
+// ============ RESTAURANT OPERATIONS ============
+export interface Room extends BaseDocument {
+  name: string;
+  description: string;
+}
+
+export interface RestaurantTable extends BaseDocument {
+  room_id: string;
+  table_number: number;
+  capacity: number;
+  status: 'empty' | 'occupied' | 'reserved';
+}
+
+// ============ ORDERS ============
+export type OrderSource = 'app' | 'waiter' | 'desk';
+export type OrderType = 'pickup' | 'delivery' | 'dinein';
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'paid' | 'cancelled';
+
+export interface OrderItemCustomization {
+  id: string;
+  name: string;
+  price: number;
+  type: string;
+}
+
+export interface OrderItem extends BaseDocument {
+  order_id?: string;
+  menu_item_id?: string;
+  item_name: string;
+  item_price: number;
+  quantity: number;
+  customizations?: OrderItemCustomization[];
+  notes?: string;
+}
+
+export interface Order extends BaseDocument {
+  customer_id?: string;
+  waiter_id?: string;
+  room_id?: string;
+  table_id?: string;
+  source: OrderSource;
+  type: OrderType;
+  status: OrderStatus;
+  total: number;
+  discount_amount?: number;
+  notes?: string;
+  items?: OrderItem[];
+  placed_at: string;
+  prepared_at?: string;
+  served_at?: string;
+  paid_at?: string;
+}
+
+// ============ LOYALTY & REWARDS ============
+export interface LoyaltyTransaction extends BaseDocument {
+  customer_id: string;
+  points: number;
+  type: 'earn' | 'redeem';
+  related_order_id?: string;
+}
+
+export interface Coupon extends BaseDocument {
+  code: string;
+  discount_amount?: number;
+  discount_percentage?: number;
+  minimum_spend?: number;
+  max_uses?: number;
+  times_used: number;
+  is_single_use: boolean;
+  expires_at?: string;
+  created_by?: string;
+}
+
+// ============ CART (LOCAL STATE) ============
 export interface CartCustomization {
-    id: string;
-    name: string;
-    price: number;
-    type: string;
+  id: string;
+  name: string;
+  price: number;
+  type: string;
 }
 
 export interface CartItemType {
-    id: string; // menu item id
-    name: string;
-    price: number;
-    image_url: string;
-    quantity: number;
-    customizations?: CartCustomization[];
+  id: string;
+  name: string;
+  price: number;
+  image_url: string;
+  quantity: number;
+  customizations?: CartCustomization[];
 }
 
 export interface CartStore {
-    items: CartItemType[];
-    addItem: (item: Omit<CartItemType, "quantity">) => void;
-    removeItem: (id: string, customizations: CartCustomization[]) => void;
-    increaseQty: (id: string, customizations: CartCustomization[]) => void;
-    decreaseQty: (id: string, customizations: CartCustomization[]) => void;
-    clearCart: () => void;
-    getTotalItems: () => number;
-    getTotalPrice: () => number;
+  items: CartItemType[];
+  addItem: (item: Omit<CartItemType, 'quantity'>) => void;
+  removeItem: (id: string, customizations: CartCustomization[]) => void;
+  increaseQty: (id: string, customizations: CartCustomization[]) => void;
+  decreaseQty: (id: string, customizations: CartCustomization[]) => void;
+  clearCart: () => void;
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
 }
 
-interface TabBarIconProps {
-    focused: boolean;
-    icon: ImageSourcePropType;
-    title: string;
+// ============ COMPONENT PROPS ============
+export interface TabBarIconProps {
+  focused: boolean;
+  icon: ImageSourcePropType;
+  title: string;
 }
 
-interface PaymentInfoStripeProps {
-    label: string;
-    value: string;
-    labelStyle?: string;
-    valueStyle?: string;
+export interface PaymentInfoStripeProps {
+  label: string;
+  value: string;
+  labelStyle?: string;
+  valueStyle?: string;
 }
 
-interface CustomButtonProps {
-    onPress?: () => void;
-    title?: string;
-    style?: string;
-    leftIcon?: React.ReactNode;
-    textStyle?: string;
-    isLoading?: boolean;
+export interface CustomButtonProps {
+  onPress?: () => void;
+  title?: string;
+  style?: string;
+  leftIcon?: React.ReactNode;
+  textStyle?: string;
+  isLoading?: boolean;
 }
 
-interface CustomHeaderProps {
-    title?: string;
+export interface CustomHeaderProps {
+  title?: string;
 }
 
-interface CustomInputProps {
-    placeholder?: string;
-    value?: string;
-    onChangeText?: (text: string) => void;
-    label: string;
-    secureTextEntry?: boolean;
-    keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+export interface CustomInputProps {
+  placeholder?: string;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  label: string;
+  secureTextEntry?: boolean;
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
 }
 
-interface ProfileFieldProps {
-    label: string;
-    value: string;
-    icon: ImageSourcePropType;
+// ============ FUNCTION PARAMETERS ============
+export interface CreateUserParams {
+  email: string;
+  password: string;
+  name: string;
 }
 
-interface CreateUserPrams {
-    email: string;
-    password: string;
-    name: string;
+export interface SignInParams {
+  email: string;
+  password: string;
 }
 
-interface SignInParams {
-    email: string;
-    password: string;
-}
-
-interface GetMenuParams {
-    category: string;
-    query: string;
+export interface GetMenuParams {
+  category?: string;
+  query?: string;
+  limit?: number;
 }
