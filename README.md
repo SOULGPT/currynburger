@@ -1,23 +1,21 @@
 <div align="center">
   <br />
-    <a href="https://www.youtube.com/watch?v=LKrX390fJMw" target="_blank">
-      <img src="assets/readme/hero.png" alt="Project Banner">
-    </a>
+  <img src="assets/readme/hero.png" alt="Curry & Burger Project Banner">
   <br />
 
   <div>
     <img src="https://img.shields.io/badge/-React_Native-black?style=for-the-badge&logoColor=white&logo=react&color=61DAFB" alt="React Native" />
     <img src="https://img.shields.io/badge/-Expo-black?style=for-the-badge&logoColor=white&logo=expo&color=000020" alt="Expo" />
-        <img src="https://img.shields.io/badge/-Appwrite-black?style=for-the-badge&logoColor=white&logo=appwrite&color=F02E65" alt="Appwrite" />
+    <img src="https://img.shields.io/badge/-Supabase-black?style=for-the-badge&logoColor=white&logo=supabase&color=3ECF8E" alt="Supabase" />
     <img src="https://img.shields.io/badge/-Tailwind-black?style=for-the-badge&logoColor=white&logo=tailwindcss&color=06B6D4" alt="Tailwind" />
     <img src="https://img.shields.io/badge/-TypeScript-black?style=for-the-badge&logoColor=white&logo=typescript&color=3178C6" alt="TypeScript" />
   </div>
 
-  <h3 align="center">Food Delivery Mobile App</h3>
+  <h3 align="center">Curry & Burger</h3>
 
-   <div align="center">
-     Build this project step by step with our detailed tutorial on <a href="https://www.youtube.com/@javascriptmastery/videos" target="_blank"><b>JavaScript Mastery</b></a> YouTube. Join the JSM family!
-    </div>
+  <div align="center">
+    A complete restaurant management app with customer ordering, waiter workflows, kitchen display, front desk operations, and admin controls.
+  </div>
 </div>
 
 ## 📋 <a name="table">Table of Contents</a>
@@ -26,24 +24,21 @@
 2. ⚙️ [Tech Stack](#tech-stack)
 3. 🔋 [Features](#features)
 4. 🤸 [Quick Start](#quick-start)
-5. 🔗 [Assets](#links)
-6. 🚀 [More](#more)
-
-## 🚨 Tutorial
-
-This repository contains the code corresponding to an in-depth tutorial available on our YouTube channel, <a href="https://www.youtube.com/@javascriptmastery/videos" target="_blank"><b>JavaScript Mastery</b></a>.
-
-If you prefer visual learning, this is the perfect resource for you. Follow our tutorial to learn how to build projects like these step-by-step in a beginner-friendly manner!
-
-<a href="https://www.youtube.com/watch?v=LKrX390fJMw" target="_blank"><img src="https://github.com/sujatagunale/EasyRead/assets/151519281/1736fca5-a031-4854-8c09-bc110e3bc16d" /></a>
+5. 🔧 [Environment Setup](#environment-setup)
+6. 🔗 [Assets](#assets)
+7. 🚀 [More](#more)
 
 ## <a name="introduction">🤖 Introduction</a>
 
-Built with React Native, TypeScript, and Tailwind CSS, this full-stack Food Delivery app features Google Authentication, dynamic search and filters, cart functionality, and smooth navigation. Powered by Appwrite for backend, database, and file storage, it delivers a responsive, scalable, and intuitive user experience with modern UI/UX best practices.
+Curry & Burger is a restaurant management platform built with Expo, React Native, and Supabase. It delivers a complete operations workflow for:
 
-If you're getting started and need assistance or face any bugs, join our active Discord community with over **50k+** members. It's a place where people help each other out.
+- Customer ordering and menu browsing
+- Waiter order taking and table management
+- Kitchen order display and preparation tracking
+- Front desk billing and order status updates
+- Admin menu and operational management
 
-<a href="https://discord.com/invite/n6EdbFJ" target="_blank"><img src="https://github.com/sujatagunale/EasyRead/assets/151519281/618f4872-1e10-42da-8213-1d69e486d02e" /></a>
+This app is designed to support real restaurant roles with secure backend integration and mobile-first UI.
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
 
@@ -108,8 +103,8 @@ Make sure you have the following installed on your machine:
 **Cloning the Repository**
 
 ```bash
-git clone https://github.com/adrianhajdin/food_ordering.git
-cd food_ordering
+git clone https://github.com/SOULGPT/currynburger.git
+cd currynburger/food_ordering
 ```
 
 **Installation**
@@ -154,24 +149,18 @@ EXPO_PUBLIC_APPLE_CLIENT_ID=com.curryandburger.app
 npx expo start
 ```
 
-Open your ExpoGO app on your phone and scan the QR code to view the project.
+Open your Expo Go app on your phone or launch a local simulator/emulator.
 
-## <a name="links">🔗 Assets</a>
+## <a name="environment-setup">🔧 Environment Setup</a>
 
-Assets and snippets used in the project can be found in the **[video kit](https://jsmastery.com/video-kit/d6633345-8797-4b96-8a4b-935618306d1d)**.
+Detailed environment setup for Supabase, social auth, and optional Sentry configuration is available in [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md).
 
-<a href="https://jsmastery.com/video-kit/d6633345-8797-4b96-8a4b-935618306d1d" target="_blank">
-  <img src="assets/readme/videokit.png" alt="Video Kit Banner">
-</a>
+## <a name="assets">🔗 Assets</a>
+
+Project assets and visual resources are included in the `assets/` folder.
 
 ## <a name="more">🚀 More</a>
 
-**Advance your skills with Next.js Pro Course**
+This repository contains the full Curry & Burger restaurant management app with customer, waiter, kitchen, front desk, and admin interfaces.
 
-Enjoyed creating this project? Dive deeper into our PRO courses for a richer learning adventure. They're packed with
-
-detailed explanations, cool features, and exercises to boost your skills. Give it a go!
-
-<a href="https://jsm.dev/rn-food-jsm" target="_blank">
-   <img src="assets/readme/jsmpro.png" alt="Project Banner">
-</a>
+For detailed environment configuration, see [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md).
