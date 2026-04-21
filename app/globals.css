@@ -1,139 +1,114 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-@layer utilities {
-    .flex-center {
-        @apply flex items-center justify-center;
-    }
+/* Tailwind v4 - Ignore IDE 'Unknown at rule' warnings. These are valid in v4. */
 
-    .flex-between {
-        @apply flex items-center justify-between;
-    }
+@custom-variant dark (&:is(.dark *));
 
-    .flex-start {
-        @apply flex items-start justify-center;
-    }
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #e78a00;
+  --primary-foreground: #ffffff;
+  --secondary: #7b1e2d;
+  --secondary-foreground: #ffffff;
+  --muted: #6b7280;
+  --muted-foreground: #9ca3af;
+  --accent: #00c897;
+  --accent-foreground: #171717;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #e78a00;
+  --radius: 0.625rem;
 }
 
-@layer components {
-    .cart-btn {
-        @apply flex items-center justify-center size-10 rounded-full bg-dark-100;
-    }
+.dark {
+  --background: #171717;
+  --foreground: #ffffff;
+  --card: #171717;
+  --card-foreground: #ffffff;
+  --popover: #171717;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #e78a00;
+  --secondary: #262626;
+  --secondary-foreground: #ffffff;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #ffffff;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #f87171;
+  --border: #262626;
+  --input: #262626;
+  --ring: #a3a3a3;
+}
 
-    .cart-badge {
-        @apply absolute -top-2 -right-1 flex items-center justify-center size-5 bg-primary rounded-full;
-    }
+@theme inline {
+  --font-manrope: "Manrope", system-ui, sans-serif;
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+}
 
-    .cart-item {
-        @apply flex flex-row items-end justify-between mb-4 bg-white rounded-xl p-3 shadow-md shadow-dark-100/10;
-    }
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 
-    .cart-item__image {
-        @apply size-24 bg-primary/10 rounded-lg flex items-center justify-center;
-    }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-manrope);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+  }
 
-    .cart-item__actions {
-        @apply flex flex-row items-center justify-center size-5 bg-primary/10 rounded-md;
-    }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 
-    .custom-btn {
-        @apply bg-primary rounded-full p-3 w-full flex flex-row justify-center;
-    }
+  button, a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
 
-    .custom-header {
-        @apply w-full flex flex-row items-center justify-between mb-10;
-    }
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .safe-top { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
 
-    .label {
-        @apply text-base text-start w-full font-quicksand-medium text-gray-500 pl-2;
-    }
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-    .input {
-        @apply rounded-lg p-3 w-full text-base font-quicksand-semibold text-dark-100 border-b leading-5;
-    }
-
-    .filter {
-        @apply px-6 py-3 rounded-full mr-2 shadow-sm shadow-black/10;
-    }
-
-    .menu-card {
-        @apply relative py-9 px-3.5 pt-24 flex items-center justify-end bg-white shadow-md shadow-black/10 rounded-3xl;
-    }
-
-    .profile-field {
-        @apply flex flex-row items-center justify-start mb-4;
-    }
-
-    .profile-field__icon {
-        @apply size-12 rounded-full bg-primary/10 flex items-center justify-center mr-3;
-    }
-
-    .searchbar {
-        @apply relative flex flex-row items-center justify-center w-full bg-white shadow-md shadow-black/10 rounded-full  font-quicksand-medium text-dark-100 gap-5;
-    }
-
-    .tab-icon {
-        @apply flex min-w-20 items-center justify-center min-h-full gap-1 mt-12;
-    }
-
-    .offer-card {
-        @apply w-full h-48 my-3 rounded-xl overflow-hidden shadow-lg flex items-center gap-5;
-    }
-
-    .offer-card__info {
-        @apply flex-1 h-full flex flex-col justify-center items-start gap-4;
-    }
-
-    .profile-avatar {
-        @apply relative size-28 border-white border-2 rounded-full;
-    }
-
-    .profile-edit {
-        @apply flex items-center justify-center absolute bottom-2 right-0 bg-primary border-2 border-white size-7 p-2 rounded-full;
-    }
-
-    .h1-bold {
-        @apply text-3xl font-quicksand-bold;
-    }
-
-    .h3-bold {
-        @apply text-xl font-quicksand-bold;
-    }
-
-    .base-bold {
-        @apply text-lg font-quicksand-bold !important;
-    }
-
-    .base-semibold {
-        @apply text-lg font-quicksand-semibold;
-    }
-
-    .base-regular {
-        @apply text-lg font-quicksand;
-    }
-
-    .paragraph-bold {
-        @apply text-base font-quicksand-bold;
-    }
-
-    .paragraph-semibold {
-        @apply text-base font-quicksand-semibold;
-    }
-
-    .paragraph-medium {
-        @apply text-base font-quicksand-medium;
-    }
-
-    .body-medium {
-        @apply text-sm font-quicksand-medium;
-    }
-
-    .body-regular {
-        @apply text-sm font-quicksand;
-    }
-
-    .small-bold {
-        @apply text-xs font-quicksand-bold;
-    }
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
 }

@@ -1,0 +1,68 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for Curry&Burger App
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdminOrDevMode() {
+      return isAuthenticated();
+    }
+    
+    function isValidImage() {
+      return request.resource.size < 5 * 1024 * 1024 && // 5MB max
+             request.resource.contentType.matches('image/.*');
+    }
+    
+    // Menu item images
+    match /menu-items/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdminOrDevMode() && isValidImage();
+      allow delete: if isAdminOrDevMode();
+    }
+    
+    // Deal images
+    match /deals/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdminOrDevMode() && isValidImage();
+      allow delete: if isAdminOrDevMode();
+    }
+    
+    // Promotion images
+    match /promotions/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdminOrDevMode() && isValidImage();
+      allow delete: if isAdminOrDevMode();
+    }
+    
+    // Banner images
+    match /banners/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdminOrDevMode() && isValidImage();
+      allow delete: if isAdminOrDevMode();
+    }
+    
+    // Ingredient images
+    match /ingredients/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdminOrDevMode() && isValidImage();
+      allow delete: if isAdminOrDevMode();
+    }
+    
+    // User profile images
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Fallback - deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

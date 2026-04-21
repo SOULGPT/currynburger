@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Curry&amp;Burger</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #FFF9F3, #FFE8CC);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .logo {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #E78A00, #7B1E2D);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 24px; font-weight: bold;
+    }
+    h1 { color: #1a1a1a; font-size: 28px; }
+    p { color: #666; font-size: 16px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #E78A00;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="logo">C&amp;B</div>
+  <h1>Curry&amp;Burger</h1>
+  <div class="spinner"></div>
+  <p>Loading...</p>
+  <script>
+    // This splash screen redirects to the live production URL
+    // configured via Capacitor server.url
+    // If running locally, redirect to dev server
+    setTimeout(() => {
+      if (window.location.hostname === 'localhost' || window.Capacitor) {
+        // Capacitor will handle navigation via server.url config
+      }
+    }, 500);
+  </script>
+</body>
+</html>

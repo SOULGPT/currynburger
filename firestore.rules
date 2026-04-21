@@ -1,0 +1,193 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // This enables initial setup without manual database edits
+    function isAdminOrDevMode() {
+      return isAdmin();
+    }
+    
+    function isStaff() {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'staff'];
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidGuestOrder() {
+      return request.resource.data.userId.matches('guest-.*') &&
+             request.resource.data.keys().hasAll([
+               'userId', 'userEmail', 'userName', 'branchId', 'items',
+               'totalEur', 'status', 'type', 'paymentStatus', 'paymentMethod'
+             ]) &&
+             request.resource.data.items.size() > 0 &&
+             request.resource.data.totalEur >= 0;
+    }
+
+    // ============================================
+    // USERS COLLECTION
+    // ============================================
+    
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isAdminOrDevMode();
+      allow delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // MENU ITEMS COLLECTION
+    // ============================================
+    
+    match /menu_items/{itemId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // MENU CATEGORIES COLLECTION
+    // ============================================
+    
+    match /menu_categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // INGREDIENTS COLLECTION
+    // ============================================
+    
+    match /ingredients/{ingredientId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // MEAL TEMPLATES COLLECTION
+    // ============================================
+    
+    match /meal_templates/{templateId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // BRANCHES COLLECTION
+    // ============================================
+    
+    match /branches/{branchId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // ORDERS COLLECTION
+    // ============================================
+    
+    match /orders/{orderId} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId) || (resource.data.userId.matches('guest-.*'));
+      allow create: if true;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // COUPONS COLLECTION
+    // ============================================
+    
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // LOYALTY TRANSACTIONS COLLECTION
+    // ============================================
+    
+    match /loyalty_transactions/{transactionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // ANALYTICS COLLECTION
+    // ============================================
+    
+    match /analytics/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // SETTINGS COLLECTION
+    // ============================================
+    
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // DEALS COLLECTION
+    // ============================================
+    
+    match /deals/{dealId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // PROMOTIONS COLLECTION
+    // ============================================
+    
+    match /promotions/{promotionId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // BANNERS COLLECTION
+    // ============================================
+    
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // RESTAURANTS COLLECTION
+    // ============================================
+    
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow write: if isAdminOrDevMode();
+    }
+
+    // ============================================
+    // FALLBACK: DENY ALL OTHER ACCESS
+    // ============================================
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
