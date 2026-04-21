@@ -1,7 +1,7 @@
 # Graph Report - /Users/miruzaankhan/Documents/curryandburger  (2026-04-21)
 
 ## Corpus Check
-- 250 files · ~1,526,004 words
+- 250 files · ~1,562,561 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -217,8 +217,8 @@
 ## Surprising Connections (you probably didn't know these)
 - `getVisibleMenuItems()` --calls--> `Filter()`  [INFERRED]
   /Users/miruzaankhan/Documents/curryandburger/app/(waiter)/order-browser.tsx → /Users/miruzaankhan/Documents/curryandburger/components/Filter.tsx
-- `getPopularItems()` --calls--> `Filter()`  [INFERRED]
-  /Users/miruzaankhan/Documents/curryandburger/lib/firebase-menu.ts → /Users/miruzaankhan/Documents/curryandburger/components/Filter.tsx
+- `Filter()` --calls--> `getPopularItems()`  [INFERRED]
+  /Users/miruzaankhan/Documents/curryandburger/components/Filter.tsx → /Users/miruzaankhan/Documents/curryandburger/lib/firebase-menu.ts
 - `assignIngredientsToMenuItem()` --calls--> `getFirebaseDb()`  [INFERRED]
   /Users/miruzaankhan/Documents/curryandburger/lib/firebase-ingredients.ts → /Users/miruzaankhan/Documents/curryandburger/lib/firebase.ts
 - `handleGuestMode()` --calls--> `toast()`  [INFERRED]
