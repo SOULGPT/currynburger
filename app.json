@@ -4,55 +4,19 @@
     "slug": "curryandburger",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./public/icon.png",
     "scheme": "curryandburger",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.curryandburger.app",
       "buildNumber": "1.0.0",
-      "supportsTablet": true,
-      "appStoreId": "6762578235"
+      "supportsTablet": true
     },
     "android": {
       "package": "com.curryandburger.app",
-      "versionCode": 1,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "jsm_reactnative_food-ordering",
-          "organization": "jsmpro"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
+      "versionCode": 1
     },
     "extra": {
-      "router": {},
       "eas": {
         "projectId": "d3972004-3ab1-4f40-a016-126b73607d7b"
       }

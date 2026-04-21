@@ -44,6 +44,8 @@ ios/App/App/GoogleService-Info.plist
 ios/App/Pods/
 ios/App/build/
 ios/App/DerivedData/
+*.xcworkspace/xcuserdata/
+DerivedData/
 .expo/
 dist/
 web-build/
