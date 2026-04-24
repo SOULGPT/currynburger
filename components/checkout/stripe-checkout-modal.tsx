@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { createCheckoutSession } from "@/app/actions/stripe"
+
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -26,7 +26,18 @@ export function StripeCheckoutModal({ open, onOpenChange, orderData, onPaymentCo
   const fetchClientSecret = useCallback(async () => {
     console.log("[v0 Stripe] Creating checkout session...")
     try {
-      const result = await createCheckoutSession(orderData)
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderData })
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create checkout session')
+      }
+      
       console.log("[v0 Stripe] Checkout session created:", result.sessionId)
       return result.clientSecret!
     } catch (error: any) {
@@ -44,13 +55,17 @@ export function StripeCheckoutModal({ open, onOpenChange, orderData, onPaymentCo
         </DialogHeader>
 
         <div className="mt-4">
-          <EmbeddedCheckoutProvider stripe={stripePromise} options={{ fetchClientSecret }}>
-            <EmbeddedCheckout
-              onComplete={() => {
+          <EmbeddedCheckoutProvider 
+            stripe={stripePromise} 
+            options={{ 
+              fetchClientSecret,
+              onComplete: () => {
                 console.log("[v0 Stripe] Payment completed!")
                 onPaymentComplete()
-              }}
-            />
+              }
+            }}
+          >
+            <EmbeddedCheckout />
           </EmbeddedCheckoutProvider>
         </div>
       </DialogContent>

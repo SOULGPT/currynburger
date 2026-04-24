@@ -15,7 +15,8 @@
     },
     "production": {
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "scheme": "App"
       }
     }
   },
@@ -24,7 +25,7 @@
       "ios": {
         "appleId": "efak621@gmail.com",
         "ascAppId": "6762578235",
-        "appleTeamId": "your_team_id"
+        "appleTeamId": "9R3XT3N4YF"
       }
     }
   }

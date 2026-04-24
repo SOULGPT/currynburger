@@ -15,6 +15,10 @@ const config: CapacitorConfig = {
       '*.googleapis.com',
       '*.firebase.io',
       'firestore.googleapis.com',
+      'accounts.google.com',
+      'appleid.apple.com',
+      '*.google.com',
+      '*.apple.com',
     ],
   },
   ios: {

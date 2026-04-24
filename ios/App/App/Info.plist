@@ -45,5 +45,16 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.457148036453-31ebm51of0mc7kfnuso5aehdn09q2apv</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>REVERSED_CLIENT_ID</string>
+		</dict>
+	</array>
 </dict>
 </plist>

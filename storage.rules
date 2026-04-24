@@ -1,68 +1,68 @@
 rules_version = '2';
-
-// Firebase Storage Security Rules for Curry&Burger App
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Helper functions
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    function isAdminOrDevMode() {
-      return isAuthenticated();
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-    
-    function isValidImage() {
-      return request.resource.size < 5 * 1024 * 1024 && // 5MB max
-             request.resource.contentType.matches('image/.*');
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
     }
-    
-    // Menu item images
-    match /menu-items/{allPaths=**} {
+
+    function under5MB() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Menu and Category Images
+    match /menu-images/{imageId} {
       allow read: if true;
-      allow write: if isAdminOrDevMode() && isValidImage();
-      allow delete: if isAdminOrDevMode();
+      allow write: if isAdmin() && isImage() && under5MB();
+      allow delete: if isAdmin();
     }
-    
-    // Deal images
-    match /deals/{allPaths=**} {
+
+    match /category-images/{imageId} {
       allow read: if true;
-      allow write: if isAdminOrDevMode() && isValidImage();
-      allow delete: if isAdminOrDevMode();
+      allow write: if isAdmin() && isImage() && under5MB();
+      allow delete: if isAdmin();
     }
-    
-    // Promotion images
-    match /promotions/{allPaths=**} {
+
+    // Promotions and Banners
+    match /promotion-images/{imageId} {
       allow read: if true;
-      allow write: if isAdminOrDevMode() && isValidImage();
-      allow delete: if isAdminOrDevMode();
+      allow write: if isAdmin() && isImage() && under5MB();
+      allow delete: if isAdmin();
     }
-    
-    // Banner images
-    match /banners/{allPaths=**} {
+
+    match /banner-images/{imageId} {
       allow read: if true;
-      allow write: if isAdminOrDevMode() && isValidImage();
-      allow delete: if isAdminOrDevMode();
+      allow write: if isAdmin() && isImage() && under5MB();
+      allow delete: if isAdmin();
     }
-    
-    // Ingredient images
-    match /ingredients/{allPaths=**} {
+
+    // Restaurant Assets (Logos, etc.)
+    match /restaurant-assets/{assetId} {
       allow read: if true;
-      allow write: if isAdminOrDevMode() && isValidImage();
-      allow delete: if isAdminOrDevMode();
+      allow write: if isAdmin() && under5MB();
+      allow delete: if isAdmin();
     }
-    
-    // User profile images
-    match /users/{userId}/{allPaths=**} {
+
+    // User Profile Pictures
+    match /user-avatars/{userId}/{imageId} {
       allow read: if true;
-      allow write: if isAuthenticated() && isValidImage();
-      allow delete: if isAuthenticated();
+      allow write: if request.auth.uid == userId && isImage() && under5MB();
+      allow delete: if request.auth.uid == userId || isAdmin();
     }
-    
-    // Fallback - deny all other paths
+
+    // Catch-all
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read: if true; // Most assets in a restaurant app should be public
+      allow write: if isAdmin();
     }
   }
 }

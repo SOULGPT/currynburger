@@ -1,11 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
 
+export const dynamic = "force-static"
+
+export async function generateStaticParams() {
+  return [{ orderId: 'fallback' }];
+}
+
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
   try {
     const { orderId } = await params
     const body = await request.json()
     const { status } = body
+
+    if (!adminDb) return NextResponse.json({ success: false, error: "Firebase Admin not configured" }, { status: 500 })
 
     if (!status) {
       return NextResponse.json({ success: false, error: "Status is required" }, { status: 400 })

@@ -2,34 +2,63 @@ import { type NextRequest, NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 
+export const dynamic = "force-static"
+
 // GET - Fetch all promotions
 export async function GET() {
   try {
-    const snapshot = await adminDb.collection("promotions").orderBy("priority", "desc").get()
+    if (!adminDb) {
+      return NextResponse.json(
+        { error: "Firebase Admin not configured" },
+        { status: 500 }
+      )
+    }
+
+    const snapshot = await adminDb
+      .collection("promotions")
+      .orderBy("priority", "desc")
+      .get()
 
     const promotions = snapshot.docs.map((doc) => {
       const data = doc.data()
       return {
         id: doc.id,
         ...data,
-        validUntil: data.validUntil?.toDate?.()?.toISOString() || data.validUntil,
-        validFrom: data.validFrom?.toDate?.()?.toISOString() || data.validFrom,
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
-        updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
+        validUntil: data.validUntil?.toDate?.()?.toISOString() ?? null,
+        validFrom: data.validFrom?.toDate?.()?.toISOString() ?? null,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
+        updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? null,
       }
     })
 
     return NextResponse.json({ promotions })
   } catch (error) {
-    console.error("Error fetching promotions:", error)
-    return NextResponse.json({ error: "Failed to fetch promotions" }, { status: 500 })
+    console.error("[promotions GET]", error)
+    return NextResponse.json(
+      { error: "Failed to fetch promotions" },
+      { status: 500 }
+    )
   }
 }
 
 // POST - Create new promotion
 export async function POST(request: NextRequest) {
   try {
+    if (!adminDb) {
+      return NextResponse.json(
+        { error: "Firebase Admin not configured" },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
+
+    if (!body.title) {
+      return NextResponse.json(
+        { error: "Title is required" },
+        { status: 400 }
+      )
+    }
 
     const promoData = {
       title: body.title,
@@ -53,18 +82,48 @@ export async function POST(request: NextRequest) {
       message: "Promotion created successfully",
     })
   } catch (error) {
-    console.error("Error creating promotion:", error)
-    return NextResponse.json({ error: "Failed to create promotion" }, { status: 500 })
+    console.error("[promotions POST]", error)
+    return NextResponse.json(
+      { error: "Failed to create promotion" },
+      { status: 500 }
+    )
   }
 }
 
 // PUT - Update existing promotion
 export async function PUT(request: NextRequest) {
   try {
+    if (!adminDb) {
+      return NextResponse.json(
+        { error: "Firebase Admin not configured" },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
 
     if (!body.id) {
-      return NextResponse.json({ error: "Promotion ID is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Promotion ID is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!body.title) {
+      return NextResponse.json(
+        { error: "Title is required" },
+        { status: 400 }
+      )
+    }
+
+    const docRef = adminDb.collection("promotions").doc(body.id)
+    const doc = await docRef.get()
+
+    if (!doc.exists) {
+      return NextResponse.json(
+        { error: "Promotion not found" },
+        { status: 404 }
+      )
     }
 
     const promoData = {
@@ -80,7 +139,7 @@ export async function PUT(request: NextRequest) {
       updatedAt: FieldValue.serverTimestamp(),
     }
 
-    await adminDb.collection("promotions").doc(body.id).update(promoData)
+    await docRef.update(promoData)
 
     return NextResponse.json({
       success: true,
@@ -88,29 +147,55 @@ export async function PUT(request: NextRequest) {
       message: "Promotion updated successfully",
     })
   } catch (error) {
-    console.error("Error updating promotion:", error)
-    return NextResponse.json({ error: "Failed to update promotion" }, { status: 500 })
+    console.error("[promotions PUT]", error)
+    return NextResponse.json(
+      { error: "Failed to update promotion" },
+      { status: 500 }
+    )
   }
 }
 
 // DELETE - Delete promotion
 export async function DELETE(request: NextRequest) {
   try {
+    if (!adminDb) {
+      return NextResponse.json(
+        { error: "Firebase Admin not configured" },
+        { status: 500 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
 
     if (!id) {
-      return NextResponse.json({ error: "Promotion ID is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Promotion ID is required" },
+        { status: 400 }
+      )
     }
 
-    await adminDb.collection("promotions").doc(id).delete()
+    const docRef = adminDb.collection("promotions").doc(id)
+    const doc = await docRef.get()
+
+    if (!doc.exists) {
+      return NextResponse.json(
+        { error: "Promotion not found" },
+        { status: 404 }
+      )
+    }
+
+    await docRef.delete()
 
     return NextResponse.json({
       success: true,
       message: "Promotion deleted successfully",
     })
   } catch (error) {
-    console.error("Error deleting promotion:", error)
-    return NextResponse.json({ error: "Failed to delete promotion" }, { status: 500 })
+    console.error("[promotions DELETE]", error)
+    return NextResponse.json(
+      { error: "Failed to delete promotion" },
+      { status: 500 }
+    )
   }
 }

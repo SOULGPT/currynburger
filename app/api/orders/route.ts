@@ -3,10 +3,15 @@ import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 import { RESTAURANT_ID } from "@/lib/firebase-schema"
 
+export const dynamic = "force-static"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { userId, items, total, type, customerContact, deliveryAddress, metadata } = body
+    
+    if (!adminDb) {
+      throw new Error("Firebase Admin not initialized")
+    }
 
     // Create order in Firestore
     const orderRef = await adminDb.collection("orders").add({
@@ -63,6 +68,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("userId")
     const limitCount = Number.parseInt(searchParams.get("limit") || "50")
+
+    if (!adminDb) {
+      throw new Error("Firebase Admin not initialized")
+    }
 
     let query = adminDb.collection("orders").where("restaurantId", "==", RESTAURANT_ID).orderBy("createdAt", "desc")
 

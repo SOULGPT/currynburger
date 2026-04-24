@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState, useCallback } from "react"
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react"
 import type { User } from "@/types"
 import { isFirebaseConfigured, getFirebaseAuth, getFirebaseDb } from "@/lib/firebase"
 
@@ -38,6 +38,46 @@ const GUEST_USER: User = {
   updatedAt: new Date(),
 }
 
+/** Map a Firebase user + Firestore data to our User type */
+function buildUser(fbUser: any, data: Record<string, any>): User {
+  return {
+    id: fbUser.uid,
+    email: fbUser.email || "",
+    name: data.name || fbUser.displayName || "User",
+    role: data.role || "customer",
+    loyaltyPoints: data.loyaltyPoints || 0,
+    addresses: data.addresses || [],
+    favorites: data.favorites || [],
+    createdAt: data.createdAt?.toDate?.() || new Date(),
+    updatedAt: data.updatedAt?.toDate?.() || new Date(),
+  }
+}
+
+/** Upsert user document in Firestore after any OAuth sign-in */
+async function upsertUserDoc(fbUser: any, db: any, dynamic: any) {
+  const { doc, getDoc, setDoc, serverTimestamp } = dynamic
+  const userDoc = await getDoc(doc(db, "users", fbUser.uid))
+  if (!userDoc.exists()) {
+    await setDoc(doc(db, "users", fbUser.uid), {
+      email: fbUser.email || "",
+      name: fbUser.displayName || "User",
+      role: "customer",
+      loyaltyPoints: 50,
+      addresses: [],
+      favorites: [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+    return {
+      role: "customer",
+      loyaltyPoints: 50,
+      addresses: [],
+      favorites: [],
+    }
+  }
+  return userDoc.data()
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [firebaseUser, setFirebaseUser] = useState<any | null>(null)
@@ -46,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authError, setAuthError] = useState<string | null>(null)
   const [configured] = useState(() => isFirebaseConfigured())
   const [available, setAvailable] = useState(false)
+  const redirectHandled = useRef(false)
 
   const clearAuthError = useCallback(() => setAuthError(null), [])
 
@@ -76,7 +117,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // Get Firebase instances
         const [auth, db] = await Promise.all([getFirebaseAuth(), getFirebaseDb()])
 
         if (!auth || !db) {
@@ -86,10 +126,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (mounted) setAvailable(true)
 
-        // Dynamic import for auth listener
-        const { onAuthStateChanged } = await import("firebase/auth")
-        const { doc, getDoc, setDoc, serverTimestamp } = await import("firebase/firestore")
+        const {
+          onAuthStateChanged,
+          getRedirectResult,
+          GoogleAuthProvider,
+          OAuthProvider,
+        } = await import("firebase/auth")
+        const firestoreDynamic = await import("firebase/firestore")
 
+        // --- Handle redirect result (Google / Apple sign-in callback) ---
+        if (!redirectHandled.current) {
+          redirectHandled.current = true
+          try {
+            const result = await getRedirectResult(auth)
+            if (result?.user) {
+              await upsertUserDoc(result.user, db, firestoreDynamic)
+              // onAuthStateChanged below will fire and set the user
+            }
+          } catch (err: any) {
+            // redirect result errors (e.g. popup_closed) — non-fatal
+            if (
+              err?.code !== "auth/popup-closed-by-user" &&
+              err?.code !== "auth/cancelled-popup-request"
+            ) {
+              console.warn("[Auth] getRedirectResult error:", err?.code, err?.message)
+            }
+          }
+        }
+
+        // --- Subscribe to auth state ---
         unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
           if (!mounted) return
 
@@ -97,45 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setFirebaseUser(fbUser)
 
             if (fbUser) {
-              const userDoc = await getDoc(doc(db, "users", fbUser.uid))
-
-              if (userDoc.exists()) {
-                const data = userDoc.data()
-                setUser({
-                  id: fbUser.uid,
-                  email: fbUser.email || "",
-                  name: data.name || fbUser.displayName || "User",
-                  role: data.role || "customer",
-                  loyaltyPoints: data.loyaltyPoints || 0,
-                  addresses: data.addresses || [],
-                  favorites: data.favorites || [],
-                  createdAt: data.createdAt?.toDate() || new Date(),
-                  updatedAt: data.updatedAt?.toDate() || new Date(),
-                })
-              } else {
-                await setDoc(doc(db, "users", fbUser.uid), {
-                  email: fbUser.email,
-                  name: fbUser.displayName || "User",
-                  role: "customer",
-                  loyaltyPoints: 50,
-                  addresses: [],
-                  favorites: [],
-                  createdAt: serverTimestamp(),
-                  updatedAt: serverTimestamp(),
-                })
-
-                setUser({
-                  id: fbUser.uid,
-                  email: fbUser.email || "",
-                  name: fbUser.displayName || "User",
-                  role: "customer",
-                  loyaltyPoints: 50,
-                  addresses: [],
-                  favorites: [],
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                })
-              }
+              const data = await upsertUserDoc(fbUser, db, firestoreDynamic)
+              setUser(buildUser(fbUser, data))
             } else {
               setUser(null)
             }
@@ -153,10 +181,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     init()
 
-    // Timeout fallback
     const timeout = setTimeout(() => {
-      if (mounted && loading) setLoading(false)
-    }, 3000)
+      if (mounted) setLoading(false)
+    }, 5000)
 
     return () => {
       mounted = false
@@ -216,38 +243,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  /**
+   * Google Sign-In
+   * Uses signInWithRedirect which works correctly in Capacitor WKWebView.
+   * signInWithPopup is intentionally NOT used — it's blocked by iOS WKWebView.
+   */
   const signInWithGoogle = useCallback(async () => {
     setAuthError(null)
     try {
-      const { GoogleAuthProvider, signInWithPopup } = await import("firebase/auth")
-      const { doc, getDoc, setDoc, serverTimestamp } = await import("firebase/firestore")
-
-      const [auth, db] = await Promise.all([getFirebaseAuth(), getFirebaseDb()])
-      if (!auth || !db) throw new Error("Firebase not available")
+      const { GoogleAuthProvider, signInWithRedirect } = await import("firebase/auth")
+      const auth = await getFirebaseAuth()
+      if (!auth) throw new Error("Firebase not available")
 
       const provider = new GoogleAuthProvider()
       provider.setCustomParameters({ prompt: "select_account" })
+      provider.addScope("email")
+      provider.addScope("profile")
 
-      const result = await signInWithPopup(auth, provider)
-
-      const userDoc = await getDoc(doc(db, "users", result.user.uid))
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", result.user.uid), {
-          email: result.user.email,
-          name: result.user.displayName || "User",
-          role: "customer",
-          loyaltyPoints: 50,
-          addresses: [],
-          favorites: [],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        })
-      }
+      // signInWithRedirect navigates away and returns via getRedirectResult on next load
+      await signInWithRedirect(auth, provider)
     } catch (error: any) {
-      if (error.code === "auth/popup-closed-by-user") {
+      const code = error?.code || ""
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
         setAuthError("Sign-in cancelled")
-      } else if (error.code === "auth/popup-blocked") {
-        setAuthError("Pop-up blocked. Please allow pop-ups.")
       } else {
         setAuthError(error.message || "Failed to sign in with Google")
       }
@@ -255,39 +273,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  /**
+   * Apple Sign-In
+   * Uses signInWithRedirect which works correctly in Capacitor WKWebView.
+   */
   const signInWithApple = useCallback(async () => {
     setAuthError(null)
     try {
-      const { OAuthProvider, signInWithPopup } = await import("firebase/auth")
-      const { doc, getDoc, setDoc, serverTimestamp } = await import("firebase/firestore")
-
-      const [auth, db] = await Promise.all([getFirebaseAuth(), getFirebaseDb()])
-      if (!auth || !db) throw new Error("Firebase not available")
+      const { OAuthProvider, signInWithRedirect } = await import("firebase/auth")
+      const auth = await getFirebaseAuth()
+      if (!auth) throw new Error("Firebase not available")
 
       const provider = new OAuthProvider("apple.com")
       provider.addScope("email")
       provider.addScope("name")
 
-      const result = await signInWithPopup(auth, provider)
-
-      const userDoc = await getDoc(doc(db, "users", result.user.uid))
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", result.user.uid), {
-          email: result.user.email || "",
-          name: result.user.displayName || "User",
-          role: "customer",
-          loyaltyPoints: 50,
-          addresses: [],
-          favorites: [],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        })
-      }
+      await signInWithRedirect(auth, provider)
     } catch (error: any) {
-      if (error.code === "auth/popup-closed-by-user") {
+      const code = error?.code || ""
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
         setAuthError("Sign-in cancelled")
-      } else if (error.code === "auth/popup-blocked") {
-        setAuthError("Pop-up blocked. Please allow pop-ups.")
       } else {
         setAuthError(error.message || "Failed to sign in with Apple")
       }
@@ -318,18 +323,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (db) {
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid))
         if (userDoc.exists()) {
-          const data = userDoc.data()
-          setUser({
-            id: firebaseUser.uid,
-            email: firebaseUser.email || "",
-            name: data.name || "User",
-            role: data.role || "customer",
-            loyaltyPoints: data.loyaltyPoints || 0,
-            addresses: data.addresses || [],
-            favorites: data.favorites || [],
-            createdAt: data.createdAt?.toDate() || new Date(),
-            updatedAt: data.updatedAt?.toDate() || new Date(),
-          })
+          setUser(buildUser(firebaseUser, userDoc.data()))
         }
       }
     } catch {}

@@ -1,15 +1,18 @@
-"use server"
-
+import { type NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 
-export async function createCheckoutSession(orderData: {
-  items: Array<{ name: string; priceEur: number; quantity: number }>
-  totalEur: number
-  orderId: string
-  userId: string
-}) {
+export const dynamic = "force-static"
+
+export async function GET() {
+  return NextResponse.json({ status: "ok" })
+}
+
+export async function POST(request: NextRequest) {
   try {
-    const lineItems = orderData.items.map((item) => ({
+    const body = await request.json()
+    const { orderData } = body
+
+    const lineItems = orderData.items.map((item: any) => ({
       price_data: {
         currency: "eur",
         product_data: {
@@ -33,26 +36,15 @@ export async function createCheckoutSession(orderData: {
       redirect_on_completion: "never",
     })
 
-    return {
+    return NextResponse.json({
       clientSecret: session.client_secret,
       sessionId: session.id,
-    }
+    })
   } catch (error: any) {
     console.error("[v0 Stripe] Error creating checkout session:", error)
-    throw new Error(`Failed to create payment session: ${error.message}`)
-  }
-}
-
-export async function verifyPaymentStatus(sessionId: string) {
-  try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
-
-    return {
-      paymentStatus: session.payment_status,
-      orderId: session.metadata?.orderId,
-    }
-  } catch (error: any) {
-    console.error("[v0 Stripe] Error verifying payment:", error)
-    throw new Error(`Failed to verify payment: ${error.message}`)
+    return NextResponse.json(
+      { error: `Failed to create payment session: ${error.message}` },
+      { status: 500 }
+    )
   }
 }

@@ -2,9 +2,13 @@ import { type NextRequest, NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 
+export const dynamic = "force-static"
+
 // GET - Fetch all banners
 export async function GET() {
   try {
+    if (!adminDb) return NextResponse.json({ error: "Firebase Admin not configured" }, { status: 500 })
+
     const snapshot = await adminDb.collection("banners").orderBy("priority", "desc").get()
 
     const banners = snapshot.docs.map((doc) => {
@@ -29,6 +33,8 @@ export async function GET() {
 // POST - Create new banner
 export async function POST(request: NextRequest) {
   try {
+    if (!adminDb) return NextResponse.json({ error: "Firebase Admin not configured" }, { status: 500 })
+
     const body = await request.json()
 
     const bannerData = {
@@ -61,6 +67,8 @@ export async function POST(request: NextRequest) {
 // PUT - Update existing banner
 export async function PUT(request: NextRequest) {
   try {
+    if (!adminDb) return NextResponse.json({ error: "Firebase Admin not configured" }, { status: 500 })
+
     const body = await request.json()
 
     if (!body.id) {
@@ -96,6 +104,8 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete banner
 export async function DELETE(request: NextRequest) {
   try {
+    if (!adminDb) return NextResponse.json({ error: "Firebase Admin not configured" }, { status: 500 })
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
 

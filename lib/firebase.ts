@@ -7,7 +7,10 @@ type FirebaseStorage = any
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+  // For Capacitor iOS, authDomain must be the hosted app URL (not fumiav2.firebaseapp.com)
+  // so that signInWithRedirect can complete the OAuth callback properly.
+  // Add curryandburger.vercel.app to Firebase Console → Auth → Authorized Domains.
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_HOSTING_URL || process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",

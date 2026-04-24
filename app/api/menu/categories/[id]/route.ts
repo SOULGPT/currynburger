@@ -1,9 +1,13 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-static"
 
-export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function generateStaticParams() {
+  return [{ id: 'fallback' }];
+}
+
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const body = await request.json()

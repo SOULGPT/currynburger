@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-static"
+
+export async function generateStaticParams() {
+  return [{ id: 'fallback' }];
+}
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

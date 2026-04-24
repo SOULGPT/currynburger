@@ -1,193 +1,154 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // ============================================
     // HELPER FUNCTIONS
     // ============================================
-    
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isAdmin() {
       return isAuthenticated() &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-    
-    // This enables initial setup without manual database edits
-    function isAdminOrDevMode() {
-      return isAdmin();
-    }
-    
-    function isStaff() {
-      return isAuthenticated() &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'staff'];
-    }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isValidGuestOrder() {
-      return request.resource.data.userId.matches('guest-.*') &&
-             request.resource.data.keys().hasAll([
-               'userId', 'userEmail', 'userName', 'branchId', 'items',
-               'totalEur', 'status', 'type', 'paymentStatus', 'paymentMethod'
-             ]) &&
-             request.resource.data.items.size() > 0 &&
-             request.resource.data.totalEur >= 0;
-    }
-
     // ============================================
-    // USERS COLLECTION
+    // USERS
     // ============================================
-    
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdminOrDevMode();
-      allow delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // MENU ITEMS COLLECTION
-    // ============================================
-    
-    match /menu_items/{itemId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // MENU CATEGORIES COLLECTION
-    // ============================================
-    
-    match /menu_categories/{categoryId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // INGREDIENTS COLLECTION
-    // ============================================
-    
-    match /ingredients/{ingredientId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // MEAL TEMPLATES COLLECTION
-    // ============================================
-    
-    match /meal_templates/{templateId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // BRANCHES COLLECTION
-    // ============================================
-    
-    match /branches/{branchId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // ORDERS COLLECTION
-    // ============================================
-    
-    match /orders/{orderId} {
-      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId) || (resource.data.userId.matches('guest-.*'));
-      allow create: if true;
-      allow update: if isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId 
+        && request.resource.data.role == 'customer';
+      allow update: if (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) 
+        || isAdmin();
       allow delete: if isAdmin();
     }
 
     // ============================================
-    // COUPONS COLLECTION
+    // RESTAURANTS & SUB-COLLECTIONS (Legacy & Direct)
     // ============================================
-    
-    match /coupons/{couponId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // LOYALTY TRANSACTIONS COLLECTION
-    // ============================================
-    
-    match /loyalty_transactions/{transactionId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // ANALYTICS COLLECTION
-    // ============================================
-    
-    match /analytics/{docId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // SETTINGS COLLECTION
-    // ============================================
-    
-    match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // DEALS COLLECTION
-    // ============================================
-    
-    match /deals/{dealId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // PROMOTIONS COLLECTION
-    // ============================================
-    
-    match /promotions/{promotionId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // BANNERS COLLECTION
-    // ============================================
-    
-    match /banners/{bannerId} {
-      allow read: if true;
-      allow create, update, delete: if isAdminOrDevMode();
-    }
-
-    // ============================================
-    // RESTAURANTS COLLECTION
-    // ============================================
-    
     match /restaurants/{restaurantId} {
       allow read: if true;
-      allow write: if isAdminOrDevMode();
+      allow write: if isAdmin();
+
+      match /items/{itemId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+
+      match /categories/{categoryId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+
+      match /offers/{offerId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
     }
 
     // ============================================
-    // FALLBACK: DENY ALL OTHER ACCESS
+    // MENU COLLECTIONS (Root Level)
     // ============================================
-    
+    match /menu_items/{itemId} {
+      allow read: if resource.data.isActive == true || resource.data.published == true || resource.data.available == true || isAdmin() || true; // Using true to guarantee it works immediately, per instructions to ensure public read
+      allow write: if isAdmin();
+    }
+
+    match /menu_categories/{categoryId} {
+      allow read: if resource.data.isActive == true || resource.data.published == true || isAdmin() || true;
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // ORDERS
+    // ============================================
+    match /orders/{orderId} {
+      allow read: if isAdmin() || (isAuthenticated() && (resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid));
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (isOwner(resource.data.userId) && request.resource.data.status == 'cancelled' && resource.data.status == 'pending');
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // MARKETING & UI
+    // ============================================
+    match /deals/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /promotions/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /banners/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /coupons/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // CUSTOMIZATION & TEMPLATES
+    // ============================================
+    match /ingredients/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /meal_templates/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // APP SETTINGS & BRANCHES
+    // ============================================
+    match /app_settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /branches/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // ANALYTICS & LOGS
+    // ============================================
+    match /analytics/{id} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() || isAuthenticated(); // Allow user-triggered analytics events
+    }
+
+    match /loyalty_transactions/{id} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // CATCH-ALL
+    // ============================================
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
   }
 }
